@@ -1,0 +1,6 @@
+@EdCo.API_HostAddress = http://localhost:5075
+
+GET {{EdCo.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

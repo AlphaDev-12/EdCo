@@ -1,0 +1,48 @@
+@model List<EdCo.Core.Entities.Subject>
+@{
+    ViewData["Title"] = "Content Builder";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fa-solid fa-sitemap me-2"></i> Content Builder</h2>
+</div>
+
+<p class="text-muted mb-4">Select a subject to open its Curriculum Builder canvas.</p>
+
+<div class="row">
+    @foreach (var subject in Model)
+    {
+        var totalUnits = subject.Chapters.Sum(c => c.Units.Count);
+        <div class="col-md-4 mb-3">
+            <a href="/Curriculum/Builder/@subject.Id" class="text-decoration-none">
+                <div class="card h-100" style="cursor: pointer; transition: all 0.3s ease;">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: var(--accent-blue);">@subject.Name</h5>
+                        <p class="text-muted mb-1"><i class="fa-solid fa-layer-group me-1"></i> @subject.GradeLevel.Name</p>
+                        <div class="d-flex gap-3 mt-3">
+                            <span class="badge bg-secondary"><i class="fa-solid fa-folder me-1"></i> @subject.Chapters.Count Chapters</span>
+                            <span class="badge bg-secondary"><i class="fa-solid fa-file me-1"></i> @totalUnits Units</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5 text-muted">
+        <i class="fa-solid fa-sitemap fa-4x mb-3"></i>
+        <h5>No subjects available</h5>
+        <p>Create subjects in the <a href="/Subjects" style="color: var(--accent-blue);">Subject Manager</a> first.</p>
+    </div>
+}
+
+<style>
+    .card:hover {
+        border-color: var(--accent-blue) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(88, 166, 255, 0.15);
+    }
+</style>

@@ -1,0 +1,598 @@
+@model EdCo.Core.Entities.Quiz
+@{
+    var title = Model.Unit != null ? $"Quiz: {Model.Unit.Title}" : $"Subject Exam: {Model.Subject?.Name}";
+    ViewData["Title"] = $"Edit {title}";
+}
+
+<style>
+    /* Cropper.js critical CSS (embedded to guarantee loading on mobile/ngrok) */
+    .cropper-container{direction:ltr;font-size:0;line-height:0;position:relative;-ms-touch-action:none;touch-action:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}
+    .cropper-container img{display:block;height:100%;image-orientation:0deg;max-height:none!important;max-width:none!important;min-height:0!important;min-width:0!important;width:100%}
+    .cropper-canvas,.cropper-crop-box,.cropper-drag-box,.cropper-modal,.cropper-wrap-box{bottom:0;left:0;position:absolute;right:0;top:0}
+    .cropper-canvas,.cropper-wrap-box{overflow:hidden}
+    .cropper-drag-box{background-color:#fff;opacity:0}
+    .cropper-modal{background-color:#000;opacity:.5}
+    .cropper-view-box{display:block;height:100%;outline:2px solid #39f;outline-color:rgba(51,153,255,.75);overflow:hidden;width:100%}
+    .cropper-dashed{border:0 dashed #eee;display:block;opacity:.5;position:absolute}
+    .cropper-dashed.dashed-h{border-bottom-width:1px;border-top-width:1px;height:33.33333%;left:0;top:33.33333%;width:100%}
+    .cropper-dashed.dashed-v{border-left-width:1px;border-right-width:1px;height:100%;left:33.33333%;top:0;width:33.33333%}
+    .cropper-center{display:block;height:0;left:50%;opacity:.75;position:absolute;top:50%;width:0}
+    .cropper-center:after,.cropper-center:before{background-color:#eee;content:" ";display:block;position:absolute}
+    .cropper-center:before{height:1px;left:-3px;top:0;width:7px}
+    .cropper-center:after{height:7px;left:0;top:-3px;width:1px}
+    .cropper-face,.cropper-line,.cropper-point{display:block;height:100%;opacity:.1;position:absolute;width:100%}
+    .cropper-face{background-color:#fff;left:0;top:0}
+    .cropper-line{background-color:#39f}
+    .cropper-line.line-e{cursor:ew-resize;right:-3px;top:0;width:5px}
+    .cropper-line.line-n{cursor:ns-resize;height:5px;left:0;top:-3px}
+    .cropper-line.line-w{cursor:ew-resize;left:-3px;top:0;width:5px}
+    .cropper-line.line-s{bottom:-3px;cursor:ns-resize;height:5px;left:0}
+    .cropper-point{background-color:#39f;height:5px;opacity:.75;width:5px}
+    .cropper-point.point-e{cursor:ew-resize;margin-top:-3px;right:-3px;top:50%}
+    .cropper-point.point-n{cursor:ns-resize;left:50%;margin-left:-3px;top:-3px}
+    .cropper-point.point-w{cursor:ew-resize;left:-3px;margin-top:-3px;top:50%}
+    .cropper-point.point-s{bottom:-3px;cursor:s-resize;left:50%;margin-left:-3px}
+    .cropper-point.point-ne{cursor:nesw-resize;right:-3px;top:-3px}
+    .cropper-point.point-nw{cursor:nwse-resize;left:-3px;top:-3px}
+    .cropper-point.point-sw{bottom:-3px;cursor:nesw-resize;left:-3px}
+    .cropper-point.point-se{bottom:-3px;cursor:nwse-resize;height:20px;opacity:1;right:-3px;width:20px}
+    .cropper-point.point-se:before{background-color:#39f;bottom:-50%;content:" ";display:block;height:200%;opacity:0;position:absolute;right:-50%;width:200%}
+    .cropper-invisible{opacity:0}
+    .cropper-bg{background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAAA3NCSVQICAjb4U/gAAAABlBMVEXMzMz////TjRV2AAAACXBIWXMAAArrAAAK6wGCiw1aAAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M26LyyjAAAABFJREFUCJlj+M/AgBVhF/0PAH6/D/HkDxOGAAAAAElFTkSuQmCC")}
+    .cropper-hide{display:block;height:0;position:absolute;width:0}
+    .cropper-hidden{display:none!important}
+    .cropper-move{cursor:move}
+    .cropper-crop{cursor:crosshair}
+    .cropper-disabled .cropper-drag-box,.cropper-disabled .cropper-face,.cropper-disabled .cropper-line,.cropper-disabled .cropper-point{cursor:not-allowed}
+
+    /* Crop container */
+    .crop-container {
+        width: 100%;
+        max-height: 65vh;
+        background: #000;
+    }
+    .crop-container > img {
+        display: block;
+        max-width: 100%;
+    }
+
+    /* Crop modal layer fix when launched from Edit modal */
+    #cropModal {
+        z-index: 1085 !important;
+    }
+</style>
+
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 gap-2">
+    <div>
+        <a href="/QuizStudio" class="btn btn-sm btn-outline-secondary me-2 mb-2 mb-sm-0"><i class="fa-solid fa-arrow-left"></i> Back</a>
+        <h2 class="d-inline fs-4 fs-sm-2">
+            <i class="fa-solid @(Model.IsExam ? "fa-star text-warning" : "fa-clipboard-question") me-2"></i> @title
+        </h2>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
+        <div class="card">
+            <div class="card-body">
+                @if (Model.Unit != null)
+                {
+                    <p class="mb-1"><strong>Grade:</strong> @Model.Unit.Chapter.Subject.GradeLevel.Name</p>
+                    <p class="mb-1"><strong>Subject:</strong> @Model.Unit.Chapter.Subject.Name</p>
+                    <p class="mb-1"><strong>Chapter:</strong> @Model.Unit.Chapter.Title</p>
+                }
+                else if (Model.Subject != null)
+                {
+                    <p class="mb-1"><strong>Type:</strong> <span class="badge bg-warning text-dark">Subject Exam</span></p>
+                    <p class="mb-1"><strong>Grade:</strong> @Model.Subject.GradeLevel.Name</p>
+                    <p class="mb-1"><strong>Subject:</strong> @Model.Subject.Name</p>
+                    <div class="d-flex align-items-center mt-2">
+                        <label class="me-2"><strong>Display Pos:</strong></label>
+                        <input type="number" id="examDisplayPos" class="form-control form-control-sm" style="width: 80px;" value="@Model.DisplayPosition" />
+                        <button class="btn btn-sm btn-outline-primary ms-2" onclick="updateExamStatus()">Save</button>
+                    </div>
+                }
+                
+                <div class="d-flex align-items-center mt-3 pt-3" style="border-top: 1px solid #30363d;">
+                    <label class="me-2"><strong>Quiz Title:</strong></label>
+                    <input type="text" id="quizTitle" class="form-control form-control-sm me-2" style="width: 200px;" value="@Model.Title" placeholder="Optional Custom Title" />
+                    <button class="btn btn-sm btn-outline-primary" onclick="updateQuizTitle()">Save Title</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-primary" id="questionCount">@Model.Questions.Count</h3>
+                <p class="text-muted mb-0">Questions</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Question Form -->
+<div class="card mb-4">
+    <div class="card-header"><i class="fa-solid fa-plus me-2"></i> Add New Question</div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-12 col-md-8 mb-3 mb-md-0">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label class="form-label mb-0">Question Text</label>
+                    <div>
+                        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" onchange="processCameraImage(this)" />
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="triggerScan('question')">
+                            <i class="fa-solid fa-camera"></i> Scan Question
+                        </button>
+                    </div>
+                </div>
+                <div class="position-relative">
+                    <textarea id="newQuestionText" class="form-control" rows="2" placeholder="e.g. What type of bond is formed by sharing electron pairs?" oninput="updateQuestionPreview()"></textarea>
+                    <div id="scanOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-light bg-opacity-75 d-flex justify-content-center align-items-center" style="display: none !important; z-index: 10; border-radius: 0.375rem;">
+                        <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                        <span class="text-primary fw-bold">Extracting...</span>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="small fw-bold text-muted mb-1 d-flex align-items-center gap-1">
+                        <i class="fa-solid fa-eye text-info"></i> Student App Display Preview:
+                    </div>
+                    <div id="questionTextPreview" class="p-3 border rounded bg-dark-subtle text-body shadow-sm" style="min-height: 48px; white-space: pre-wrap; font-size: 1.05rem; font-weight: 600;">
+                        <span class="text-muted fst-italic">Student preview will render here...</span>
+                    </div>
+                </div>
+                <div class="form-text mt-1">Supports LaTeX equations! Use <code>\(...\)</code> or <code>$$...$$</code> for math equations.</div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-2 mb-3 mb-md-0">
+                <label class="form-label">Type</label>
+                <select id="newQuestionType" class="form-select" onchange="toggleQuestionType()">
+                    <option value="0">Multiple Choice</option>
+                    <option value="2">Short Answer (AI Graded)</option>
+                    <option value="3">Essay (AI Graded)</option>
+                </select>
+            </div>
+            <div class="col-12 col-sm-6 col-md-2">
+                <label class="form-label">Points</label>
+                <input type="number" id="newPoints" class="form-control" value="1" min="1" />
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label d-block">Diagram Image (Optional)</label>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="triggerScan('diagram')">
+                    <i class="fa-solid fa-camera me-1"></i> Capture Diagram
+                </button>
+                <button type="button" id="btnRemoveDiagram" class="btn btn-sm btn-outline-danger" style="display: none;" onclick="removeDiagramImage()">
+                    <i class="fa-solid fa-trash me-1"></i> Remove Diagram
+                </button>
+            </div>
+            <div id="diagramPreviewContainer" class="mt-2" style="display: none;">
+                <img id="diagramPreview" src="" alt="Diagram Preview" style="max-height: 160px; border-radius: 0.375rem; border: 1px solid #444;" />
+            </div>
+            <div class="form-text">Use camera to capture and crop a diagram/figure for this question.</div>
+        </div>
+
+        <div id="mcOptionsSection">
+        <div class="row">
+            <div class="col-12 col-md-6 mb-3">
+                <label class="form-label"><span class="badge bg-secondary me-1">A</span> Option A</label>
+                <input type="text" class="form-control" id="newOptionA" placeholder="First option" />
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+                <label class="form-label"><span class="badge bg-secondary me-1">B</span> Option B</label>
+                <input type="text" class="form-control" id="newOptionB" placeholder="Second option" />
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+                <label class="form-label"><span class="badge bg-secondary me-1">C</span> Option C</label>
+                <input type="text" class="form-control" id="newOptionC" placeholder="Third option" />
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+                <label class="form-label"><span class="badge bg-secondary me-1">D</span> Option D</label>
+                <input type="text" class="form-control" id="newOptionD" placeholder="Fourth option" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Correct Answer</label>
+            <select class="form-select" id="newCorrectOption" style="max-width: 200px;">
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+            </select>
+        </div>
+        </div>
+        
+        <div id="aiGradingSection" style="display: none;">
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label class="form-label mb-0">Reference Correct Answer</label>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="triggerScan('answer')">
+                        <i class="fa-solid fa-camera"></i> Scan Answer
+                    </button>
+                </div>
+                <div class="position-relative">
+                    <textarea id="newCorrectAnswer" class="form-control" rows="2" placeholder="e.g. [2] (a) 5x - 4&#10;[3] (b) 2x = 8, x = 4&#10;Tip: Use [N] in front of a part to set its max points for rubric generation!" oninput="updateAnswerPreview()"></textarea>
+                    <div id="scanAnswerOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-light bg-opacity-75 d-flex justify-content-center align-items-center" style="display: none !important; z-index: 10; border-radius: 0.375rem;">
+                        <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                        <span class="text-primary fw-bold">Extracting...</span>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="small fw-bold text-muted mb-1 d-flex align-items-center gap-1">
+                        <i class="fa-solid fa-eye text-info"></i> Student App Answer Preview:
+                    </div>
+                    <div id="correctAnswerPreview" class="p-3 border rounded bg-dark-subtle text-body shadow-sm" style="min-height: 48px; white-space: pre-wrap; font-size: 1.05rem; font-weight: 600;">
+                        <span class="text-muted fst-italic">Answer preview will render here...</span>
+                    </div>
+                </div>
+                <div class="form-text mt-1">Supports LaTeX equations! Use <code>[N]</code> in front of a part (e.g. <code>[2] (a)...</code>) to set exact max points for rubric auto-generation.</div>
+                <div class="mt-2 mb-3">
+                    <label class="form-label d-block">Reference Solution Diagram (Optional)</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="triggerScan('answer_diagram')">
+                            <i class="fa-solid fa-camera me-1"></i> Capture Reference Diagram
+                        </button>
+                        <button type="button" id="btnRemoveAnswerDiagram" class="btn btn-sm btn-outline-danger" style="display: none;" onclick="removeAnswerDiagramImage()">
+                            <i class="fa-solid fa-trash me-1"></i> Remove Reference Diagram
+                        </button>
+                    </div>
+                    <div id="answerDiagramPreviewContainer" class="mt-2" style="display: none;">
+                        <img id="answerDiagramPreview" src="" alt="Reference Solution Diagram Preview" style="max-height: 160px; border-radius: 0.375rem; border: 1px solid #444;" />
+                    </div>
+                    <div class="form-text">Attach an optional diagram or visual solution key for the reference answer.</div>
+                </div>
+            </div>
+            <div class="mb-3 position-relative">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+                    <label class="form-label mb-0">AI Grading Rubric</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" id="btnGenerateRubric" class="btn btn-sm btn-outline-info" onclick="generateRubricWithAI()">
+                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Auto-Generate with AI
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-success" onclick="addRubricRow()">
+                            <i class="fa-solid fa-plus"></i> Add Criterion
+                        </button>
+                    </div>
+                </div>
+                <div id="rubricOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex justify-content-center align-items-center rounded" style="display: none !important; z-index: 10;">
+                    <div class="spinner-border text-info spinner-border-sm me-2" role="status"></div>
+                    <span class="text-info fw-bold">Generating Rubric with AI (Llama)...</span>
+                </div>
+                <div class="d-none d-md-block">
+                    <div class="row fw-bold mb-2">
+                        <div class="col-md-3">Criterion</div>
+                        <div class="col-md-2">Max Pts</div>
+                        <div class="col-md-6">Description</div>
+                        <div class="col-md-1"></div>
+                    </div>
+                </div>
+                <div id="rubricTableBody">
+                    <div class="row align-items-center mb-3 mb-md-2 pb-3 pb-md-0 border-bottom border-secondary border-opacity-25 rubric-row">
+                        <div class="col-12 col-md-3 mb-2 mb-md-0">
+                            <label class="form-label d-md-none text-muted small mb-1">Criterion</label>
+                            <input type="text" class="form-control form-control-sm rubric-criterion" placeholder="e.g. Core Concept" value="Core Concept" />
+                        </div>
+                        <div class="col-12 col-md-2 mb-2 mb-md-0">
+                            <label class="form-label d-md-none text-muted small mb-1">Max Pts</label>
+                            <input type="number" class="form-control form-control-sm rubric-points" value="1" min="0" />
+                        </div>
+                        <div class="col-12 col-md-6 mb-2 mb-md-0">
+                            <label class="form-label d-md-none text-muted small mb-1">Description</label>
+                            <input type="text" class="form-control form-control-sm rubric-desc" placeholder="Explanation of requirements..." value="Clear explanation of the required concept." />
+                        </div>
+                        <div class="col-12 col-md-1 text-end text-md-center">
+                            <button type="button" class="btn btn-sm btn-outline-danger w-100 w-md-auto" onclick="removeRubricRow(this)"><i class="fa-solid fa-times"></i> <span class="d-md-none ms-1">Remove</span></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-text">Define the grading criteria used by the AI evaluator. Points here should sum to the total points for the question.</div>
+            </div>
+        </div>
+        <button class="btn btn-primary" onclick="addQuestion()">
+            <i class="fa-solid fa-plus me-1"></i> Add Question
+        </button>
+    </div>
+</div>
+
+<!-- Existing Questions -->
+<h5 class="mb-3">Existing Questions</h5>
+<div id="questionsList">
+    @foreach (var q in Model.Questions)
+    {
+        <div class="card mb-2" id="question-@q.Id">
+            <div class="card-body py-2 d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="mb-1">
+                        @if (q.QuestionType == EdCo.Core.Entities.QuestionType.MultipleChoice)
+                        {
+                            <span class="badge bg-primary me-2">MC</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-info text-dark me-2">AI-Graded</span>
+                        }
+                        <strong>@q.QuestionText</strong> <span class="text-muted ms-2">(@q.Points pts)</span>
+                    </p>
+
+                    @if (!string.IsNullOrEmpty(q.ImageUrl))
+                    {
+                        <div class="mb-3">
+                            <img src="@q.ImageUrl" alt="Question Diagram" class="img-fluid rounded" style="max-height: 200px;" />
+                        </div>
+                    }
+                    
+                    @if (q.QuestionType == EdCo.Core.Entities.QuestionType.MultipleChoice)
+                    {
+                        <div class="d-flex flex-column flex-sm-row flex-wrap gap-2 gap-sm-3 text-muted" style="font-size: 0.9em;">
+                            <span class="@(q.CorrectOption == "A" ? "text-success fw-bold" : "")"><span class="badge bg-secondary me-1">A</span> @q.OptionA</span>
+                            <span class="@(q.CorrectOption == "B" ? "text-success fw-bold" : "")"><span class="badge bg-secondary me-1">B</span> @q.OptionB</span>
+                            <span class="@(q.CorrectOption == "C" ? "text-success fw-bold" : "")"><span class="badge bg-secondary me-1">C</span> @q.OptionC</span>
+                            <span class="@(q.CorrectOption == "D" ? "text-success fw-bold" : "")"><span class="badge bg-secondary me-1">D</span> @q.OptionD</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted mt-2" style="font-size: 0.9em;">
+                            <div><strong>Reference Answer:</strong> @(q.CorrectAnswer ?? "None")</div>
+                            @if (!string.IsNullOrEmpty(q.CorrectAnswerImageUrl))
+                            {
+                                <div class="mt-2">
+                                    <span class="badge bg-secondary mb-1">Reference Diagram</span>
+                                    <div>
+                                        <img src="@q.CorrectAnswerImageUrl" alt="Reference Answer Diagram" class="img-fluid rounded" style="max-height: 160px; border: 1px solid #444;" />
+                                    </div>
+                                </div>
+                            }
+                            <div class="mt-1">
+                                <a class="text-decoration-none" data-bs-toggle="collapse" href="#rubric-@q.Id" role="button" aria-expanded="false" aria-controls="rubric-@q.Id">
+                                    <i class="fa-solid fa-code"></i> View Rubric
+                                </a>
+                                <div class="collapse mt-2" id="rubric-@q.Id">
+                                    <pre class="bg-dark text-light p-2 rounded" style="font-size: 0.8em;">@q.RubricJson</pre>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="d-flex align-items-center gap-1 ms-2">
+                    <button class="btn btn-sm btn-outline-warning" onclick="editQuestion(@q.Id)"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteQuestion(@q.Id)"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.Questions.Any())
+{
+    <div class="text-center py-4" style="color: #8b949e;" id="noQuestionsState">
+        <p>No questions added yet. Use the form above to add questions.</p>
+    </div>
+}
+
+<!-- Crop Modal -->
+<div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-sm-down">
+    <div class="modal-content bg-dark text-light border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title" id="cropModalLabel"><i class="fa-solid fa-crop-simple me-2 text-primary"></i>Crop Image</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="crop-container">
+            <img id="cropImage" src="" alt="Picture">
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnCropConfirm">
+            <i class="fa-solid fa-crop-simple me-1"></i> Crop & Extract Text
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Question Modal -->
+<div class="modal fade" id="editQuestionModal" tabindex="-1" aria-labelledby="editQuestionModalLabel" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content bg-dark text-light border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title" id="editQuestionModalLabel"><i class="fa-solid fa-pen-to-square me-2 text-warning"></i>Edit Question</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editQuestionId" />
+        <div class="row mb-3">
+            <div class="col-12 col-md-8 mb-3 mb-md-0">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label class="form-label mb-0">Question Text</label>
+                    <div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="triggerScan('edit_question')">
+                            <i class="fa-solid fa-camera"></i> Scan Question
+                        </button>
+                    </div>
+                </div>
+                <div class="position-relative">
+                    <textarea id="editQuestionText" class="form-control" rows="3" placeholder="e.g. What type of bond is formed by sharing electron pairs?" oninput="updateEditQuestionPreview()"></textarea>
+                    <div id="scanEditOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-light bg-opacity-75 d-flex justify-content-center align-items-center" style="display: none !important; z-index: 10; border-radius: 0.375rem;">
+                        <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                        <span class="text-primary fw-bold">Extracting...</span>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="small fw-bold text-muted mb-1 d-flex align-items-center gap-1">
+                        <i class="fa-solid fa-eye text-info"></i> Student App Display Preview:
+                    </div>
+                    <div id="editQuestionTextPreview" class="p-3 border rounded bg-dark-subtle text-body shadow-sm" style="min-height: 48px; white-space: pre-wrap; font-size: 1.05rem; font-weight: 600;">
+                        <span class="text-muted fst-italic">Student preview will render here...</span>
+                    </div>
+                </div>
+                <div class="form-text mt-1">Supports LaTeX equations! Use <code>\(...\)</code> or <code>$$...$$</code> for math equations.</div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-2 mb-3 mb-md-0">
+                <label class="form-label">Type</label>
+                <select id="editQuestionType" class="form-select" onchange="toggleEditQuestionType()">
+                    <option value="0">Multiple Choice</option>
+                    <option value="2">Short Answer (AI Graded)</option>
+                    <option value="3">Essay (AI Graded)</option>
+                </select>
+            </div>
+            <div class="col-12 col-sm-6 col-md-2">
+                <label class="form-label">Points</label>
+                <input type="number" id="editPoints" class="form-control" value="1" min="1" />
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label d-block">Diagram Image (Optional)</label>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="triggerScan('edit_diagram')">
+                    <i class="fa-solid fa-camera me-1"></i> Capture Diagram
+                </button>
+                <button type="button" id="btnRemoveEditDiagram" class="btn btn-sm btn-outline-danger" style="display: none;" onclick="removeEditDiagramImage()">
+                    <i class="fa-solid fa-trash me-1"></i> Remove Diagram
+                </button>
+            </div>
+            <div id="editDiagramPreviewContainer" class="mt-2" style="display: none;">
+                <img id="editDiagramPreview" src="" alt="Diagram Preview" style="max-height: 160px; border-radius: 0.375rem; border: 1px solid #444;" />
+            </div>
+            <div class="form-text">Use camera to capture and crop a diagram/figure for this question.</div>
+        </div>
+
+        <div id="editMcOptionsSection">
+        <div class="row">
+            <div class="col-12 col-md-6 mb-3">
+                <label class="form-label"><span class="badge bg-secondary me-1">A</span> Option A</label>
+                <input type="text" class="form-control" id="editOptionA" placeholder="First option" />
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+                <label class="form-label"><span class="badge bg-secondary me-1">B</span> Option B</label>
+                <input type="text" class="form-control" id="editOptionB" placeholder="Second option" />
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+                <label class="form-label"><span class="badge bg-secondary me-1">C</span> Option C</label>
+                <input type="text" class="form-control" id="editOptionC" placeholder="Third option" />
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+                <label class="form-label"><span class="badge bg-secondary me-1">D</span> Option D</label>
+                <input type="text" class="form-control" id="editOptionD" placeholder="Fourth option" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Correct Answer</label>
+            <select class="form-select" id="editCorrectOption" style="max-width: 200px;">
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+            </select>
+        </div>
+        </div>
+        
+        <div id="editAiGradingSection" style="display: none;">
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label class="form-label mb-0">Reference Correct Answer</label>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="triggerScan('edit_answer')">
+                        <i class="fa-solid fa-camera"></i> Scan Answer
+                    </button>
+                </div>
+                <div class="position-relative">
+                    <textarea id="editCorrectAnswer" class="form-control" rows="2" placeholder="e.g. [2] (a) 5x - 4&#10;[3] (b) 2x = 8, x = 4&#10;Tip: Use [N] in front of a part to set its max points for rubric generation!" oninput="updateEditAnswerPreview()"></textarea>
+                    <div id="scanEditAnswerOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-light bg-opacity-75 d-flex justify-content-center align-items-center" style="display: none !important; z-index: 10; border-radius: 0.375rem;">
+                        <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                        <span class="text-primary fw-bold">Extracting...</span>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="small fw-bold text-muted mb-1 d-flex align-items-center gap-1">
+                        <i class="fa-solid fa-eye text-info"></i> Student App Answer Preview:
+                    </div>
+                    <div id="editCorrectAnswerPreview" class="p-3 border rounded bg-dark-subtle text-body shadow-sm" style="min-height: 48px; white-space: pre-wrap; font-size: 1.05rem; font-weight: 600;">
+                        <span class="text-muted fst-italic">Answer preview will render here...</span>
+                    </div>
+                </div>
+                <div class="form-text mt-1">Supports LaTeX equations! Use <code>[N]</code> in front of a part (e.g. <code>[2] (a)...</code>) to set exact max points for rubric auto-generation.</div>
+                <div class="mt-2 mb-3">
+                    <label class="form-label d-block">Reference Solution Diagram (Optional)</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="triggerScan('edit_answer_diagram')">
+                            <i class="fa-solid fa-camera me-1"></i> Capture Reference Diagram
+                        </button>
+                        <button type="button" id="btnRemoveEditAnswerDiagram" class="btn btn-sm btn-outline-danger" style="display: none;" onclick="removeEditAnswerDiagramImage()">
+                            <i class="fa-solid fa-trash me-1"></i> Remove Reference Diagram
+                        </button>
+                    </div>
+                    <div id="editAnswerDiagramPreviewContainer" class="mt-2" style="display: none;">
+                        <img id="editAnswerDiagramPreview" src="" alt="Reference Solution Diagram Preview" style="max-height: 160px; border-radius: 0.375rem; border: 1px solid #444;" />
+                    </div>
+                    <div class="form-text">Attach an optional diagram or visual solution key for the reference answer.</div>
+                </div>
+            </div>
+            <div class="mb-3 position-relative">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+                    <label class="form-label mb-0">AI Grading Rubric</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" id="btnGenerateEditRubric" class="btn btn-sm btn-outline-info" onclick="generateEditRubricWithAI()">
+                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Auto-Generate with AI
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-success" onclick="addEditRubricRow()">
+                            <i class="fa-solid fa-plus"></i> Add Criterion
+                        </button>
+                    </div>
+                </div>
+                <div id="editRubricOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex justify-content-center align-items-center rounded" style="display: none !important; z-index: 10;">
+                    <div class="spinner-border text-info spinner-border-sm me-2" role="status"></div>
+                    <span class="text-info fw-bold">Generating Rubric with AI (Llama)...</span>
+                </div>
+                <div class="d-none d-md-block">
+                    <div class="row fw-bold mb-2">
+                        <div class="col-md-3">Criterion</div>
+                        <div class="col-md-2">Max Pts</div>
+                        <div class="col-md-6">Description</div>
+                        <div class="col-md-1"></div>
+                    </div>
+                </div>
+                <div id="editRubricTableBody">
+                </div>
+                <div class="form-text">Define the grading criteria used by the AI evaluator. Points here should sum to the total points for the question.</div>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-warning" onclick="saveEditQuestion()">
+            <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script id="quiz-editor-data" type="application/json">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+        quizId = Model.Id,
+        subjectName = Model.Subject?.Name ?? Model.Unit?.Chapter?.Subject?.Name ?? "",
+        questions = Model.Questions.Select(q => new {
+            id = q.Id,
+            questionText = q.QuestionText,
+            questionType = (int)q.QuestionType,
+            points = q.Points,
+            optionA = q.OptionA,
+            optionB = q.OptionB,
+            optionC = q.OptionC,
+            optionD = q.OptionD,
+            correctOption = q.CorrectOption,
+            correctAnswer = q.CorrectAnswer,
+            correctAnswerImageUrl = q.CorrectAnswerImageUrl,
+            rubricJson = q.RubricJson,
+            imageUrl = q.ImageUrl
+        })
+    }))
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="~/js/quiz-studio-editor.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,99 @@
+@model List<EdCo.Core.Entities.Subject>
+@{
+    ViewData["Title"] = "Subject Manager";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fa-solid fa-book me-2"></i> Subject Manager</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+        <i class="fa-solid fa-plus me-1"></i> Add Subject
+    </button>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Subject Name</th>
+                    <th>Grade Level</th>
+                    <th>Chapters</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var subject in Model)
+                {
+                    <tr>
+                        <td><i class="fa-solid fa-book-open text-info me-2"></i> @subject.Name</td>
+                        <td><span class="badge bg-secondary">@subject.GradeLevel.Name</span></td>
+                        <td>@subject.Chapters.Count</td>
+                        <td>
+                            <a href="/Curriculum/Builder/@subject.Id" class="btn btn-sm btn-outline-success">
+                                <i class="fa-solid fa-sitemap"></i> Build Content
+                            </a>
+                            <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Delete this subject and ALL its content?');">
+                                <input type="hidden" name="id" value="@subject.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5 text-muted">
+        <i class="fa-solid fa-book fa-4x mb-3"></i>
+        <h5>No subjects created yet</h5>
+        <p>First add Grade Levels, then create subjects here.</p>
+    </div>
+}
+
+<!-- Add Subject Modal -->
+<div class="modal fade" id="addSubjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">
+            <form asp-action="Create" method="post">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                    <h5 class="modal-title"><i class="fa-solid fa-plus me-2"></i> Add Subject</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Subject Name</label>
+                        <input type="text" class="form-control" name="name" placeholder="e.g. Mathematics, Chemistry" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Grade Level</label>
+                        <select class="form-select" name="gradeLevelId" required>
+                            <option value="">Select Grade Level...</option>
+                            @if (ViewBag.GradeLevels != null)
+                            {
+                                @foreach (var gl in (List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.GradeLevels)
+                                {
+                                    <option value="@gl.Value">@gl.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus me-1"></i> Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

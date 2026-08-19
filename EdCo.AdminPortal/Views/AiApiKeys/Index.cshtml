@@ -1,0 +1,312 @@
+@model List<EdCo.Core.Entities.AiApiKey>
+
+@{
+    string provider = ViewBag.Provider as string ?? "DeepInfra";
+    string activeProvider = ViewBag.ActiveProvider as string ?? "DeepInfra";
+    ViewData["Title"] = $"{provider} API Key Management";
+    var activeKey = Model?.FirstOrDefault(k => k.IsActive);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-1"><i class="fa-solid fa-key text-warning me-2"></i> Dynamic API Keys</h2>
+        <p class="text-muted mb-0">Manage and encrypt @provider API keys for zero-downtime AI model access and rate limit mitigation.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        @if (!string.Equals(provider, activeProvider, StringComparison.OrdinalIgnoreCase))
+        {
+            <form asp-action="SetActiveProvider" method="post" class="d-inline">
+                <input type="hidden" name="provider" value="@provider" />
+                <button type="submit" class="btn btn-outline-warning">
+                    <i class="fa-solid fa-bolt me-1"></i> Make @provider System Active
+                </button>
+            </form>
+        }
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addKeyModal">
+            <i class="fa-solid fa-plus me-1"></i> Add New @provider Key
+        </button>
+    </div>
+</div>
+
+<!-- Provider Selector Nav Tabs -->
+<ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link @(string.Equals(provider, "DeepInfra", StringComparison.OrdinalIgnoreCase) ? "active fw-bold" : "")" asp-action="Index" asp-route-provider="DeepInfra">
+            <i class="fa-solid fa-brain me-1"></i> DeepInfra (Llama 4 & 3.1)
+            @if (string.Equals(activeProvider, "DeepInfra", StringComparison.OrdinalIgnoreCase))
+            {
+                <span class="badge bg-success ms-1"><i class="fa-solid fa-check me-1"></i>Active</span>
+            }
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(string.Equals(provider, "Groq", StringComparison.OrdinalIgnoreCase) ? "active fw-bold" : "")" asp-action="Index" asp-route-provider="Groq">
+            <i class="fa-solid fa-bolt me-1"></i> Groq (Qwen & GPT-OSS)
+            @if (string.Equals(activeProvider, "Groq", StringComparison.OrdinalIgnoreCase))
+            {
+                <span class="badge bg-success ms-1"><i class="fa-solid fa-check me-1"></i>Active</span>
+            }
+        </a>
+    </li>
+</ul>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-check me-2"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-triangle-exclamation me-2"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Key Status Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3 mb-md-0">
+        <div class="card border-primary h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                    <i class="fa-solid fa-shield-halved fa-2x text-primary"></i>
+                </div>
+                <div>
+                    <div class="text-muted small text-uppercase fw-semibold">@provider Active Key Status</div>
+                    @if (activeKey != null)
+                    {
+                        <h4 class="mb-0 text-success fw-bold"><i class="fa-solid fa-circle-check me-1"></i> @activeKey.Label</h4>
+                        <div class="small text-muted mt-1">Masked: <code>@activeKey.MaskedKey</code></div>
+                    }
+                    else
+                    {
+                        <h4 class="mb-0 text-warning fw-bold"><i class="fa-solid fa-circle-exclamation me-1"></i> Using appsettings.json Fallback</h4>
+                        <div class="small text-muted mt-1">No active database key selected for @provider. Default key in configuration is active.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-secondary h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
+                    <i class="fa-solid fa-lock fa-2x text-info"></i>
+                </div>
+                <div>
+                    <div class="text-muted small text-uppercase fw-semibold">Security & System Provider</div>
+                    <h5 class="mb-0 fw-bold" style="color: var(--text-primary);">
+                        AES-256 Symmetric Encryption
+                        <span class="badge bg-primary ms-2">Global Provider: @activeProvider</span>
+                    </h5>
+                    <div class="small text-muted mt-1">Keys are encrypted at rest in database and cached in memory with instant invalidation.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Keys Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fa-solid fa-list me-2"></i> Configured @provider Keys (@(Model?.Count ?? 0))</span>
+        <span class="badge bg-secondary">Provider: @provider</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Status</th>
+                        <th>Label</th>
+                        <th>Masked API Key</th>
+                        <th>Last Used</th>
+                        <th>Created At</th>
+                        <th>Created By</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var keyItem in Model)
+                        {
+                            <tr class="@(keyItem.IsActive ? "table-active" : "")">
+                                <td>
+                                    @if (keyItem.IsActive)
+                                    {
+                                        <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i> Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <strong>@keyItem.Label</strong>
+                                </td>
+                                <td>
+                                    <code>@keyItem.MaskedKey</code>
+                                </td>
+                                <td>
+                                    @(keyItem.LastUsedAt.HasValue ? keyItem.LastUsedAt.Value.ToString("MMM dd, yyyy HH:mm") : "Never")
+                                </td>
+                                <td>
+                                    @keyItem.CreatedAt.ToString("MMM dd, yyyy")
+                                </td>
+                                <td>
+                                    <span class="text-muted small">@(keyItem.CreatedBy ?? "Admin")</span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2">
+                                        @if (!keyItem.IsActive)
+                                        {
+                                            <form asp-action="SetActive" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@keyItem.Id" />
+                                                <input type="hidden" name="provider" value="@provider" />
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Set as Active Key">
+                                                    <i class="fa-solid fa-play me-1"></i> Activate
+                                                </button>
+                                            </form>
+                                        }
+                                        <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this API key?');">
+                                            <input type="hidden" name="id" value="@keyItem.Id" />
+                                            <input type="hidden" name="provider" value="@provider" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Key">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                <i class="fa-solid fa-key fa-2x mb-2 d-block opacity-50"></i>
+                                No @provider API keys stored in database yet. Click <strong>Add New @provider Key</strong> to add one.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add New Key -->
+<div class="modal fade" id="addKeyModal" tabindex="-1" aria-labelledby="addKeyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">
+            <form asp-action="Create" method="post" id="addKeyForm">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                    <h5 class="modal-title" id="addKeyModalLabel"><i class="fa-solid fa-key text-warning me-2"></i> Add New @provider API Key</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="provider" value="@provider" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Key Label / Name</label>
+                        <input type="text" class="form-control" name="label" placeholder="e.g. Primary @provider Production Key" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">API Key Value</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="rawKeyInput" name="rawKey" placeholder="Key value..." required autocomplete="off" />
+                            <button type="button" class="btn btn-outline-secondary" id="toggleKeyVisibility" title="Show/Hide Key">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">Your API key will be encrypted at rest in the database using AES-256.</div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="setAsActive" name="setAsActive" value="true" checked />
+                        <label class="form-check-label fw-semibold" for="setAsActive">Set as Active @provider Key immediately</label>
+                    </div>
+
+                    <div id="testKeyFeedback" class="d-none alert mt-3 mb-0" role="alert"></div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+                    <button type="button" class="btn btn-outline-info me-auto" id="btnTestKey">
+                        <i class="fa-solid fa-vial me-1"></i> Test Connection
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-shield-halved me-1"></i> Encrypt & Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Toggle visibility of API key in modal
+            const keyInput = document.getElementById('rawKeyInput');
+            const toggleBtn = document.getElementById('toggleKeyVisibility');
+
+            if (toggleBtn && keyInput) {
+                toggleBtn.addEventListener('click', function () {
+                    const isPassword = keyInput.getAttribute('type') === 'password';
+                    keyInput.setAttribute('type', isPassword ? 'text' : 'password');
+                    toggleBtn.querySelector('i').className = isPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+                });
+            }
+
+            // Test Key Connection via AJAX
+            const testBtn = document.getElementById('btnTestKey');
+            const feedbackDiv = document.getElementById('testKeyFeedback');
+
+            if (testBtn && feedbackDiv) {
+                testBtn.addEventListener('click', async function () {
+                    const rawKey = keyInput ? keyInput.value.trim() : '';
+                    if (!rawKey) {
+                        feedbackDiv.className = 'alert alert-warning mt-3 mb-0';
+                        feedbackDiv.innerHTML = '<i class="fa-solid fa-exclamation-triangle me-1"></i> Please enter an API key first before testing.';
+                        feedbackDiv.classList.remove('d-none');
+                        return;
+                    }
+
+                    testBtn.disabled = true;
+                    testBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Testing...';
+                    feedbackDiv.classList.add('d-none');
+
+                    try {
+                        const response = await fetch('/AiApiKeys/TestKey', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ rawKey: rawKey, provider: '@provider' })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            feedbackDiv.className = 'alert alert-success mt-3 mb-0';
+                            feedbackDiv.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i> ' + result.message;
+                        } else {
+                            feedbackDiv.className = 'alert alert-danger mt-3 mb-0';
+                            feedbackDiv.innerHTML = '<i class="fa-solid fa-circle-xmark me-1"></i> ' + result.message;
+                        }
+                    } catch (err) {
+                        feedbackDiv.className = 'alert alert-danger mt-3 mb-0';
+                        feedbackDiv.innerHTML = '<i class="fa-solid fa-circle-xmark me-1"></i> Test ping failed due to network error.';
+                    } finally {
+                        feedbackDiv.classList.remove('d-none');
+                        testBtn.disabled = false;
+                        testBtn.innerHTML = '<i class="fa-solid fa-vial me-1"></i> Test Connection';
+                    }
+                });
+            }
+        });
+    </script>
+}

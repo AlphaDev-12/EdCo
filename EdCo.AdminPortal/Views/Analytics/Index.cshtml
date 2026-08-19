@@ -1,0 +1,144 @@
+@model EdCo.AdminPortal.Models.AnalyticsViewModel
+
+@{
+    ViewData["Title"] = "User Analytics";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fa-solid fa-magnifying-glass-chart me-2"></i> User Analytics</h2>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center p-4">
+            <h5 class="text-muted">Quiz Pass Rate</h5>
+            <h2 class="text-success">@Model.QuizPassRate%</h2>
+            <small class="text-muted">Avg passing score</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-4">
+            <h5 class="text-muted">Offline Syncs</h5>
+            <h2 class="text-info">@Model.TotalOfflineSyncs.ToString("N0")</h2>
+            <small class="text-muted">All time</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-4">
+            <h5 class="text-muted">AI Conversations</h5>
+            <h2 class="text-warning">@Model.AiConversations.ToString("N0")</h2>
+            <small class="text-muted">Total queries</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-4">
+            <h5 class="text-muted">Total Tokens</h5>
+            <h2 class="text-primary">@Model.TotalTokensUsed.ToString("N0")</h2>
+            <small class="text-muted">Total tokens billed</small>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center p-4">
+            <h5 class="text-muted">Input Tokens</h5>
+            <h2 class="text-info">@Model.TotalInputTokens.ToString("N0")</h2>
+            <small class="text-muted">Total prompts</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center p-4">
+            <h5 class="text-muted">Output Tokens</h5>
+            <h2 class="text-warning">@Model.TotalOutputTokens.ToString("N0")</h2>
+            <small class="text-muted">Total completions</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center p-4">
+            <h5 class="text-muted">Total AI Cost</h5>
+            <h2 class="text-success">$@Model.TotalCost.ToString("N6")</h2>
+            <small class="text-muted">Estimated based on usage</small>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">Token Usage (Last 7 Days)</div>
+            <div class="card-body">
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="tokenChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">Daily Student Engagement (Quiz Attempts)</div>
+            <div class="card-body">
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="engagementChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Token Chart
+            var tokenCtx = document.getElementById('tokenChart').getContext('2d');
+            var tokenLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TokenChartLabels));
+            var tokenData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TokenChartData));
+
+            new Chart(tokenCtx, {
+                type: 'line',
+                data: {
+                    labels: tokenLabels,
+                    datasets: [{
+                        label: 'Tokens Used',
+                        data: tokenData,
+                        borderColor: '#a371f7',
+                        backgroundColor: 'rgba(163, 113, 247, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Engagement Chart
+            var engCtx = document.getElementById('engagementChart').getContext('2d');
+            var engLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.EngagementChartLabels));
+            var engData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.EngagementChartData));
+
+            new Chart(engCtx, {
+                type: 'bar',
+                data: {
+                    labels: engLabels,
+                    datasets: [{
+                        label: 'Quiz Attempts',
+                        data: engData,
+                        backgroundColor: '#3fb950',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        });
+    </script>
+}

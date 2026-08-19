@@ -1,0 +1,45 @@
+# Caddyfile - Automatic SSL/TLS & Reverse Proxy for EdCo Stack
+
+{
+    email {$ACME_EMAIL:admin@edco-platform.com}
+    # Uncomment for staging certificates when testing
+    # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+# EdCo API Domain / Route
+{$DOMAIN_API:http://localhost:5000} {
+    encode gzip zstd
+
+    reverse_proxy edco-api:8080 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+}
+
+# EdCo Admin Portal Domain / Route
+{$DOMAIN_ADMIN:http://localhost:5001} {
+    encode gzip zstd
+
+    reverse_proxy edco-admin:8080 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+}

@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"name": "EdCo (Root)",
+			"path": "."
+		},
+		{
+			"name": "Backend (API)",
+			"path": "EdCo.API"
+		},
+		{
+			"name": "Backend (Admin Portal)",
+			"path": "EdCo.AdminPortal"
+		},
+		{
+			"name": "Backend (Core Library)",
+			"path": "EdCo.Core"
+		},
+		{
+			"name": "Mobile (Student App)",
+			"path": "edco-student-app"
+		}
+	],
+	"settings": {
+		"dotnet.defaultSolution": "EdCo.sln"
+	}
+}

@@ -1,0 +1,45 @@
+# Production Dockerfile for EdCo.API (.NET 10.0)
+
+# Stage 1: Build & Publish
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy project files for dependency caching
+COPY ["EdCo.API/EdCo.API.csproj", "EdCo.API/"]
+COPY ["EdCo.Core/EdCo.Core.csproj", "EdCo.Core/"]
+
+# Restore packages
+RUN dotnet restore "EdCo.API/EdCo.API.csproj"
+
+# Copy full source code
+COPY ["EdCo.API/", "EdCo.API/"]
+COPY ["EdCo.Core/", "EdCo.Core/"]
+
+# Build and Publish Release artifacts
+WORKDIR "/src/EdCo.API"
+RUN dotnet publish "EdCo.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Stage 2: Production Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+
+# Install curl for container health checks
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
+# Run as non-root app user for enhanced security
+USER app
+
+# Copy published binaries
+COPY --chown=app:app --from=build /app/publish .
+
+# Environment setup
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Production
+EXPOSE 8080
+EXPOSE 8081
+
+# Container Health Check targeting /healthz
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD curl -f http://localhost:8080/healthz || exit 1
+
+ENTRYPOINT ["dotnet", "EdCo.API.dll"]

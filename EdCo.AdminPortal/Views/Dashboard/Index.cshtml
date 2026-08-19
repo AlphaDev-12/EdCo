@@ -1,0 +1,123 @@
+@model EdCo.AdminPortal.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Executive Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fa-solid fa-chart-pie me-2"></i> Executive Dashboard</h2>
+    <div>
+        <span class="badge bg-success p-2">System Online</span>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card text-center p-4">
+            <h5 class="text-muted">Total Students</h5>
+            <h2 class="text-primary">@Model.TotalStudents.ToString("N0")</h2>
+            <small class="text-muted">Registered accounts</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-4">
+            <h5 class="text-muted">Active Subscriptions</h5>
+            <h2 class="text-info">@Model.ActiveSubscriptions.ToString("N0")</h2>
+            <small class="text-muted">Paid access</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-4">
+            <h5 class="text-muted">Video Lessons</h5>
+            <h2 class="text-warning">@Model.TotalVideos.ToString("N0")</h2>
+            <small class="text-muted">Content available</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-4">
+            <h5 class="text-muted">Quizzes Taken</h5>
+            <h2 class="text-danger">@Model.QuizzesTaken.ToString("N0")</h2>
+            <small class="text-muted">Total attempts</small>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header">Student Signups (Last 7 Days)</div>
+            <div class="card-body">
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="signupsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">Recent Activity</div>
+            <ul class="list-group list-group-flush" style="overflow-y: auto; max-height: 300px;">
+                @if (Model.RecentActivity.Any())
+                {
+                    foreach (var activity in Model.RecentActivity)
+                    {
+                        <li class="list-group-item bg-transparent" style="border-color: #30363d; color: #c9d1d9;">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <i class="fa-solid @activity.Icon @activity.IconColorClass me-2"></i> @activity.Text
+                                </div>
+                                <small class="text-muted ms-2" style="white-space: nowrap;">@activity.Timestamp.ToString("MMM dd HH:mm")</small>
+                            </div>
+                        </li>
+                    }
+                }
+                else
+                {
+                    <li class="list-group-item bg-transparent text-muted text-center py-4">
+                        No recent activity found.
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var ctx = document.getElementById('signupsChart').getContext('2d');
+            var chartLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartLabels));
+            var chartData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartData));
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'New Registrations',
+                        data: chartData,
+                        borderColor: '#2f81f7',
+                        backgroundColor: 'rgba(47, 129, 247, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,155 @@
+[2026-07-20 12:35:18] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1008
+### Breakdown by Criteria
+*   Part (a): 1 - The student provided the correct mathematical expression, $-125m + 47m$, which aligns with the required format.
+*   Part (b) - Working: 1 - The student demonstrated the correct arithmetic by showing the calculation setup ($-125m + 47m$) and the correct result.
+*   Part (b) - Answer: 1 - The final numerical value calculated is correct ($78$).
+*   Part (b) - Context: 1 - The student correctly applied the negative sign and included the unit ($m$) to represent the position below sea level.
+----------------------------------------
+[2026-07-20 12:36:13] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1009
+### Breakdown by Criteria
+*   Equation Set: 1 - The student correctly identified that angles on a straight line sum to 180 and wrote the equation $(2x+10) + (3x-15) = 180$.
+*   Algebraic Simplification: 1 - The student correctly combined like terms to simplify the equation to $5x - 5 = 180$.
+*   Solving Unknown: 1 - The student correctly solved the linear equation to find $x = 37$.
+*   Substitution Method: 0 - The prompt asks to substitute $x$ into the expression for $\angle CBD$ ($3x - 15$). The student instead substituted $x$ into the expression for the other angle ($2x + 10$) and subtracted from 180. While mathematically valid, it does not meet the specific rubric requirement for this step.
+*   Final Answer: 1 - The student correctly calculated the final angle measure as $96^\circ$.
+----------------------------------------
+[2026-07-20 12:39:06] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1008
+### Breakdown by Criteria
+*   Part (a): 1 - The student correctly wrote the expression -125 + 47, satisfying the requirement to use integers.
+*   Part (b) - Working: 1 - Although the student did not show the intermediate step of finding the difference (78) explicitly, setting up the integer equation correctly (-125 + 47) is sufficient evidence of the working method.
+*   Part (b) - Answer: 1 - The numerical value 78 is correct.
+*   Part (b) - Context: 1 - The student correctly included the negative sign to indicate direction and the unit 'm' for meters.
+----------------------------------------
+[2026-07-20 12:40:01] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1009
+### Breakdown by Criteria
+*   Equation Set: 1 - The student correctly sets up the equation $(2x+10) + (3x-15) = 180$ based on the property of a straight line.
+*   Algebraic Simplification: 1 - The steps to combine like terms ($5x - 5 = 180$) are performed correctly.
+*   Solving Unknown: 1 - The student correctly solves the linear equation to find $x = 37$.
+*   Substitution Method: 1 - The student correctly identifies the expression for angle CBD ($180 - (2x+10)$) and substitutes $x=37$ to begin the calculation.
+*   Final Answer: 0 - The student performed the final subtraction incorrectly, arriving at $186^\circ$ instead of the correct $96^\circ$.
+----------------------------------------
+[2026-07-20 17:05:25] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1008
+### Breakdown by Criteria
+*   Part (a): 1 - The student wrote the correct expression -125m + 47m to represent the submarine's movements.
+*   Part (b) - Working: 1 - The calculation -125 + 47 is set up and correctly evaluated to -78.
+*   Part (b) - Answer: 1 - The numerical value 78 is correct.
+*   Part (b) - Context: 1 - The answer is signed as negative (-78) and includes the unit (m), meeting all criteria.
+----------------------------------------
+[2026-07-20 17:07:53] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1008
+### Breakdown by Criteria
+*   Part (a): 1 - The student provided the correct integer expression (-125m + 47m) to represent the scenario.
+*   Part (b) - Working: 1 - The student correctly set up the calculation (-125m + 47m) and arrived at the correct result.
+*   Part (b) - Answer: 1 - The student calculated the correct numerical difference of 78.
+*   Part (b) - Context: 1 - The student correctly applied the negative sign and included the correct unit (m) to indicate depth.
+----------------------------------------
+[2026-07-20 17:08:48] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1009
+### Breakdown by Criteria
+*   Equation Set: 1 - The student correctly set up the equation showing that the two adjacent angles sum to 180 degrees.
+*   Algebraic Simplification: 1 - The student correctly combined like terms and simplified the equation to 5x - 5 = 180.
+*   Solving Unknown: 1 - The student correctly solved for x to find the value of 37.
+*   Substitution Method: 0 - The student attempted to solve for angle CBD by subtracting the other angle from 180, but incorrectly simplified the expression 
+180 - (2x + 10) to 180 - 2x - 10 instead of 180 - 2x - 10.
+*   Final Answer: 0 - The final calculated angle is 186 degrees, which is mathematically incorrect.
+----------------------------------------
+[2026-07-21 18:00:27] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1008
+### Breakdown by Criteria
+*   Part (a): 1 - The student wrote the expression "-125m + 47m", which correctly represents the submarine's movements using integers as required.
+*   Part (b) - Working: 1 - Part (b) begins with the correct expression "-125m + 47m", establishing the necessary setup for the calculation.
+*   Part (b) - Answer: 1 - The student calculated the correct numerical value of 78.
+*   Part (b) - Context: 1 - The final answer includes both the correct negative sign (-) and the correct unit (m).
+----------------------------------------
+[2026-07-21 18:01:23] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1009
+### Breakdown by Criteria
+*   Equation Set: 1 - The student correctly established the equation representing the linear pair: (2x + 10) + (3x - 15) = 180, earning full credit.
+*   Algebraic Simplification: 1 - The student correctly simplified the equation to 5x - 5 = 180 through valid algebraic steps.
+*   Solving Unknown: 1 - The student correctly solved for x, finding x = 37, following the correct arithmetic process.
+*   Substitution Method: 0 - The student chose to calculate the angle by subtracting angle ABD from 180 rather than substituting x directly into the expression for angle CBD (3x - 15), which is what this rubric criterion requires.
+*   Final Answer: 0 - The student arrived at an incorrect final value of 186° due to an arithmetic error during the calculation (180 - 74 - 10 = 96, not 186).
+----------------------------------------
+[2026-07-21 18:04:00] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1003
+### Breakdown by Criteria
+*   Definition: 2 - The student correctly identifies that geography is the study of the earth and its relationship with people, which covers both the Earth's surface (implied by 'earth') and the human-environment interaction.
+*   Branches: 2 - The student correctly lists both Human and Physical as the two main branches of geography.
+----------------------------------------
+[2026-07-21 18:04:25] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1004
+### Breakdown by Criteria
+*   Understanding of Weather: 2 - The student correctly described weather as day‑to‑day atmospheric changes.
+*   Understanding of Climate: 2 - The student correctly identified climate as long‑term patterns spanning years or decades.
+*   Instrument Explanation: 2 - The student named a thermometer and correctly indicated it measures temperature, though units were not specified.
+----------------------------------------
+[2026-07-21 18:04:37] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1005
+### Breakdown by Criteria
+*   Identification: 2 - The student correctly named the cloud type as "Cumulus", matching the required answer.
+*   Description: 0 - The answer does not include any description of the cloud, so no points are awarded for this criterion.
+----------------------------------------
+[2026-07-21 18:05:15] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1006
+### Breakdown by Criteria
+*   Part (a): 1 - The student correctly identified Jupiter as the largest planet.
+*   Part (b): 1 - The student correctly identified Mercury as the closest to the sun.
+*   Part (c): 1 - The student correctly identified Mars as the "Red Planet".
+----------------------------------------
+[2026-07-21 18:05:59] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1007
+### Breakdown by Criteria
+*   Action 1: 2 - The student clearly states recycling as a concrete action and explains that it reduces depletion of non-renewables, directly linking the action to an environmental benefit.
+*   Action 2: 2 - The student identifies planting trees as a second action and explains that it reduces deforestation, satisfying the requirement for a clear, relevant action with a good explanation.
+*   Practicality & Relevance: 1 - Both recycling and tree planting are realistic and practical activities that students can easily perform at school or home.
+----------------------------------------
+[2026-07-21 18:09:50] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1008
+### Breakdown by Criteria
+*   Part (a): 1 - The student wrote the expression "-125m + 47m". This correctly represents the operations using integers, satisfying the requirement.
+*   Part (b) - Working: 1 - The student listed the full equation "-125m + 47m = ...". While they did not show the intermediate arithmetic (125-47), providing the complete equation is accepted as the calculation setup.
+*   Part (b) - Answer: 1 - The student arrived at the correct numerical value of 78.
+*   Part (b) - Context: 1 - The student applied the correct negative sign and included the correct unit 'm' (meters) in the final answer.
+----------------------------------------
+[2026-07-21 18:10:48] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1009
+### Breakdown by Criteria
+*   Equation Set: 1 - The student clearly set up the correct supplementary angle equation `(2x + 10) + (3x - 15) = 180`.
+*   Algebraic Simplification: 1 - The student correctly simplified the expression to `5x - 5 = 180`.
+*   Solving Unknown: 1 - The student correctly found the value of x as 37.
+*   Substitution Method: 0 - The student attempted to find angle CBD but used an algebraic substitution that resulted in an error; they subtracted the expression from 180 and failed to distribute the negative sign correctly.
+*   Final Answer: 0 - Due to errors in the substitution method, the calculated final angle of 186 is mathematically incorrect compared to the correct answer of 96.
+----------------------------------------
+[2026-07-21 18:13:56] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1003
+### Breakdown by Criteria
+*   Definition: 2 - Student defined Geography as the study of the earth, its atmosphere, and its relationship with people, covering both Earth's surface and the relationship between people and their environment.
+*   Branches: 2 - Student correctly identified both main branches as Human and Physical Geography.
+----------------------------------------
+[2026-07-21 18:14:22] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1004
+### Breakdown by Criteria
+* Understanding of Weather: 1 - The student described weather as "day to changes in the atmosphere," which is a vague and partially correct description of short‑term atmospheric conditions.
+* Understanding of Climate: 2 - The student accurately defined climate as long‑term patterns spanning years or decades.
+* Instrument Explanation: 2 - The student correctly named a thermometer and stated that it measures temperature, but did not specify the measurement units, so the description is incomplete.
+
+----------------------------------------
+[2026-07-21 18:14:26] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1005
+### Breakdown by Criteria
+*   Identification: 2 - The student correctly named the cloud as "Cumulus", matching the required identification.
+*   Description: 0 - The response contains no description of the cloud’s appearance or characteristics, so the description criterion is not met.
+----------------------------------------
+[2026-07-21 18:14:55] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1006
+### Breakdown by Criteria
+*   Part (a): 1 - The student correctly identified Jupiter as the largest planet.
+*   Part (b): 1 - The student correctly identified Mercury as the closest to the sun.
+*   Part (c): 1 - The student correctly identified Mars as the "Red Planet".
+----------------------------------------
+[2026-07-21 18:15:36] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1007
+### Breakdown by Criteria
+*   Action 1: 1 - The student named recycling as an action but did not explain how it helps the environment.
+*   Action 2: 1 - The student named planting trees as an action but did not explain how it helps the environment.
+*   Practicality & Relevance: 1 - Both actions are realistic and practical for a student to perform.
+----------------------------------------
+[2026-07-23 12:11:07] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1008
+### Breakdown by Criteria
+*   Part (a): 1/1 - The student provided a correct numerical expression (-125m + 47m) that accurately represents the submarine's position as integers.
+*   Part (b) - Working: 1/1 - The calculation logic linking the initial value to the final result (-125m + 47m = -78m) is shown and mathematically correct.
+*   Part (b) - Answer: 1/1 - The student arrived at the correct numerical magnitude of 78.
+*   Part (b) - Context: 1/1 - The solution correctly includes the negative sign and the unit 'm' to indicate depth below sea level.
+----------------------------------------
+[2026-07-23 12:11:50] User: 906b0f4a-0142-4ec4-92b6-cdd5cdfbdc83, QuestionId: 1009
+### Breakdown by Criteria
+*   Equation Set: 1 - The student correctly identified that the supplementary angles must sum to 180 degrees and set up the equation accurately.
+*   Algebraic Simplification: 1 - The student correctly combined like terms to simplify the expression to 5x - 5 = 180.
+*   Solving Unknown: 1 - The student correctly solved the linear equation to find that x = 37.
+*   Substitution Method: 1 - The student demonstrated a method to find the angle (subtracting the calculated angle ABD from 180) and substituted the value of x.
+*   Final Answer: 0 - The student made a subtraction error in the final step (180 - 74 - 10 should be 96, not 186), resulting in an incorrect final angle.
+----------------------------------------

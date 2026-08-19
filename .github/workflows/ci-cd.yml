@@ -1,0 +1,189 @@
+name: EdCo Platform CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE_NAME: ${{ github.repository }}/edco-api
+  ADMIN_IMAGE_NAME: ${{ github.repository }}/edco-admin
+
+jobs:
+  # ==========================================
+  # JOB 1: Build & Automated Tests
+  # ==========================================
+  build-and-test:
+    name: Build & Test (.NET 10.0)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10.0 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore EdCo.sln
+
+      - name: Build Solution (Release)
+        run: dotnet build EdCo.sln --configuration Release --no-restore
+
+      - name: Run Unit Tests
+        run: |
+          dotnet test EdCo.sln --configuration Release --no-build --verbosity normal
+
+  # ==========================================
+  # JOB 2: EF Core Migration Bundle Generation
+  # ==========================================
+  generate-ef-migration-bundle:
+    name: Generate EF Core Migration Bundle
+    needs: build-and-test
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10.0 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install EF Core CLI Tool
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Generate EF Core Migration Bundle
+        run: |
+          dotnet ef migrations bundle \
+            --project EdCo.Core/EdCo.Core.csproj \
+            --startup-project EdCo.API/EdCo.API.csproj \
+            --output ./efbundle \
+            --force \
+            --self-contained -r win-x64
+
+      - name: Upload Migration Bundle Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: efbundle-win-x64
+          path: ./efbundle
+          retention-days: 7
+
+  # ==========================================
+  # JOB 3: Container Build & Push to GHCR
+  # ==========================================
+  build-and-push-containers:
+    name: Build & Push Containers (GHCR)
+    needs: build-and-test
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker Metadata (API)
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build & Push EdCo.API Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.api
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+
+      - name: Extract Docker Metadata (AdminPortal)
+        id: meta-admin
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.ADMIN_IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build & Push EdCo.AdminPortal Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.admin
+          push: true
+          tags: ${{ steps.meta-admin.outputs.tags }}
+          labels: ${{ steps.meta-admin.outputs.labels }}
+
+  # ==========================================
+  # JOB 4: Automated Managed Windows VPS Deploy
+  # ==========================================
+  deploy-to-windows-vps:
+    name: Deploy to Managed Windows VPS
+    needs: [generate-ef-migration-bundle, build-and-push-containers]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download EF Migration Bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: efbundle-win-x64
+          path: ./deploy-package
+
+      - name: Prepare Deployment Package
+        run: |
+          cp docker-compose.yml ./deploy-package/
+          cp scripts/deploy-vps.ps1 ./deploy-package/
+          cp scripts/run-migrations.ps1 ./deploy-package/
+
+      - name: Execute Deployment on Windows VPS (via SSH)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_SSH_PORT || 22 }}
+          script: |
+            powershell -Command "
+              $ErrorActionPreference = 'Stop'
+              Write-Host 'Starting Remote Windows VPS Deployment...'
+              
+              # Ensure app directory exists
+              $appDir = 'C:\EdCo\Deployments'
+              if (-not (Test-Path $appDir)) { New-Item -ItemType Directory -Path $appDir -Force }
+              
+              # Login to GHCR
+              echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+              
+              # Execute PowerShell deployment script
+              Set-Location $appDir
+              docker compose pull
+              docker compose up -d --remove-orphans
+              
+              Write-Host 'Deployment complete and verified.'
+            "

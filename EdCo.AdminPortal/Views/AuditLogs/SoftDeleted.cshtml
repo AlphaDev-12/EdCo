@@ -1,0 +1,120 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Data Governance - Recovery Center";
+    string entityType = ViewBag.EntityType ?? "Chapter";
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold text-slate-800 mb-1">
+                <i class="bi bi-trash-undo text-warning me-2"></i>Soft-Delete Data Recovery Center
+            </h1>
+            <p class="text-muted small mb-0">SuperAdmin portal to review deleted records and restore data without loss.</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Admin Audit Logs
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Entity Navigation Tabs -->
+    <ul class="nav nav-pills mb-4">
+        <li class="nav-item">
+            <a class="nav-link @(entityType == "Chapter" ? "active" : "")" asp-action="SoftDeleted" asp-route-entityType="Chapter">
+                <i class="bi bi-journal-bookmark me-1"></i> Chapters
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(entityType == "Unit" ? "active" : "")" asp-action="SoftDeleted" asp-route-entityType="Unit">
+                <i class="bi bi-journal-text me-1"></i> Units
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(entityType == "Quiz" ? "active" : "")" asp-action="SoftDeleted" asp-route-entityType="Quiz">
+                <i class="bi bi-question-square me-1"></i> Quizzes
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(entityType == "Subject" ? "active" : "")" asp-action="SoftDeleted" asp-route-entityType="Subject">
+                <i class="bi bi-book me-1"></i> Subjects
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(entityType == "GradeLevel" ? "active" : "")" asp-action="SoftDeleted" asp-route-entityType="GradeLevel">
+                <i class="bi bi-mortarboard me-1"></i> Grade Levels
+            </a>
+        </li>
+    </ul>
+
+    <!-- Soft-Deleted Records Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 border-0">
+            <h6 class="fw-bold mb-0 text-slate-700">Soft-Deleted @entityType Items</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small uppercase">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name / Title</th>
+                        <th>Deleted At (UTC)</th>
+                        <th>Deleted By</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model == null || !((System.Collections.IEnumerable)Model).GetEnumerator().MoveNext())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-check-circle fs-1 d-block mb-2 text-success opacity-50"></i>
+                                No soft-deleted @entityType items found in the recycle bin.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (dynamic item in Model!)
+                        {
+                            string itemTitle = entityType == "Subject" || entityType == "GradeLevel" ? item.Name : item.Title;
+                            <tr>
+                                <td class="fw-bold font-monospace">#@item.Id</td>
+                                <td class="fw-semibold text-slate-800">@itemTitle</td>
+                                <td class="small font-monospace">@(item.DeletedAt != null ? item.DeletedAt.ToString("yyyy-MM-dd HH:mm:ss") : "N/A")</td>
+                                <td>
+                                    <span class="badge bg-secondary">@(item.DeletedBy ?? "Admin")</span>
+                                </td>
+                                <td class="text-end">
+                                    <form asp-action="RestoreEntity" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to restore @itemTitle?');">
+                                        <input type="hidden" name="entityType" value="@entityType" />
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i>Restore Record
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

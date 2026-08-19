@@ -1,0 +1,146 @@
+@model List<EdCo.Core.Entities.Quiz>
+@{
+    ViewData["Title"] = "Quiz Studio";
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <h2 class="mb-0"><i class="fa-solid fa-clipboard-question me-2"></i> Quiz Constructor Studio</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createExamModal">
+        <i class="fa-solid fa-plus me-1"></i> Create Subject Exam
+    </button>
+</div>
+
+<p class="text-muted mb-4">Quizzes are created from the Content Builder. Click "Edit" to add questions.</p>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    @foreach (var quiz in Model)
+    {
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title mb-0">
+                            @if (quiz.Unit != null)
+                            {
+                                <i class="fa-solid fa-file-lines text-info me-2"></i> @quiz.Unit.Title
+                            }
+                            else if (quiz.Subject != null)
+                            {
+                                <i class="fa-solid fa-star text-warning me-2"></i> <strong>Subject Exam</strong>
+                            }
+                            else
+                            {
+                                <span class="text-danger">Unlinked Quiz</span>
+                            }
+                        </h5>
+                        @if (quiz.IsExam)
+                        {
+                            <span class="badge bg-danger">EXAM</span>
+                        }
+                    </div>
+
+                    <div class="mb-3 text-muted" style="font-size: 0.9em;">
+                        @if (quiz.Unit != null)
+                        {
+                            <div><strong>Chapter:</strong> @quiz.Unit.Chapter.Title</div>
+                            <div class="mt-1">
+                                <strong>Subject:</strong> @quiz.Unit.Chapter.Subject.Name 
+                                <span class="badge bg-secondary ms-1">@quiz.Unit.Chapter.Subject.GradeLevel.Name</span>
+                            </div>
+                        }
+                        else if (quiz.Subject != null)
+                        {
+                            <div><strong>Subject:</strong> @quiz.Subject.Name 
+                                <span class="badge bg-secondary ms-1">@quiz.Subject.GradeLevel.Name</span>
+                            </div>
+                            <div class="mt-1"><strong>Pos:</strong> @quiz.DisplayPosition</div>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>ZIMSEC Tag:</strong> <code>@(string.IsNullOrEmpty(quiz.Title) ? "—" : quiz.Title)</code>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-auto pt-3" style="border-top: 1px solid var(--border-color);">
+                        <span><span class="badge bg-primary">@quiz.Questions.Count</span> Questions</span>
+                        <a href="/QuizStudio/Edit/@quiz.Id" class="btn btn-sm btn-outline-info">
+                            <i class="fa-solid fa-pen"></i> Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5 text-muted">
+        <i class="fa-solid fa-clipboard-question fa-4x mb-3"></i>
+        <h5>No quizzes created yet</h5>
+        <p>Create quizzes from the <a href="/Curriculum" style="color: var(--accent-blue);">Content Builder</a> or click "Create Subject Exam" above.</p>
+    </div>
+}
+
+<!-- Create Exam Modal -->
+<div class="modal fade" id="createExamModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                <h5 class="modal-title"><i class="fa-solid fa-star text-warning me-2"></i>Create Subject Exam</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Select Subject</label>
+                    <select class="form-select" id="examSubjectId">
+                        <option value="">Choose...</option>
+                        @if (ViewBag.Subjects != null)
+                        {
+                            foreach (var s in ViewBag.Subjects)
+                            {
+                                <option value="@s.Id">@s.GradeLevel.Name - @s.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Exam Title</label>
+                    <input type="text" class="form-control" id="examTitle" placeholder="e.g. Mid-Term Exam" />
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createExam()">Create Exam</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function createExam() {
+        const subjectId = document.getElementById('examSubjectId').value;
+        const title = document.getElementById('examTitle').value;
+        
+        if (!subjectId) {
+            alert('Please select a subject.');
+            return;
+        }
+
+        fetch('/QuizStudio/CreateExamForSubject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subjectId: parseInt(subjectId), title: title })
+        })
+        .then(r => r.json())
+        .then(result => {
+            if (result.success) {
+                window.location.href = '/QuizStudio/Edit/' + result.quizId;
+            } else {
+                alert(result.message || 'Failed to create exam.');
+            }
+        });
+    }
+</script>
+}

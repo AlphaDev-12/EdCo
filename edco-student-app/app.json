@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "StudyPro",
+    "slug": "studypro",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.studypro.app"
+    },
+    "android": {
+      "package": "com.studypro.app",
+      "versionCode": 1,
+      "softwareKeyboardLayoutMode": "pan",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "name": "EdCo Student App",
+      "shortName": "EdCo",
+      "output": "single"
+    },
+    "extra": {
+      "privacyPolicyUrl": "https://admin.edco.com/Privacy",
+      "termsUrl": "https://admin.edco.com/Terms"
+    },
+    "plugins": [
+      "expo-video",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "StudyPro needs access to your photos to allow uploading quiz and assignment solutions.",
+          "cameraPermission": "StudyPro needs access to your camera to take photos of completed work."
+        }
+      ]
+    ]
+  }
+}

@@ -1,0 +1,63 @@
+@{
+    ViewData["Title"] = "AI Tutor Prompts";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fa-solid fa-robot me-2"></i> AI Tutor Prompt Templates</h2>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">System Prompt Configuration</div>
+    <div class="card-body">
+        <p class="text-muted mb-3">
+            The AI Tutor uses <strong>Llama 3.1 8B</strong> via the Groq API. The system prompt is automatically 
+            injected with the student's current context (Grade, Subject, Chapter, Unit) to restrict responses 
+            to the relevant topic. Below you can customize the base instruction template.
+        </p>
+
+        <div class="mb-3">
+            <label class="form-label">Base System Prompt Template</label>
+            <textarea class="form-control" rows="8" style="font-family: 'Courier New', monospace; font-size: 14px;">You are an elite personal AI Tutor for the EdCo Revision Platform.
+
+The student is currently studying {{GradeName}} {{SubjectName}}, 
+Chapter {{ChapterIndex}}: {{ChapterTitle}}, 
+Unit {{UnitIndex}}: {{UnitTitle}}.
+
+Rules:
+- Restrict all responses to coaching this specific topic only.
+- Be concise, encouraging, and helpful.
+- Use simple English appropriate for Zimbabwean secondary school students.
+- Do NOT write generic emails, code, or answer unrelated questions.
+- If the student asks something outside the topic, politely redirect them.</textarea>
+        </div>
+
+        <div class="alert alert-info py-2" style="background-color: #0d2c4e; border-color: #1f4571; color: #79c0ff;">
+            <i class="fa-solid fa-circle-info me-1"></i>
+            Available placeholders: <code>{{GradeName}}</code>, <code>{{SubjectName}}</code>,
+            <code>{{ChapterIndex}}</code>, <code>{{ChapterTitle}}</code>,
+            <code>{{UnitIndex}}</code>, <code>{{UnitTitle}}</code>
+        </div>
+
+        <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1"></i> Save Template</button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">API Configuration</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">Provider</label>
+                <input type="text" class="form-control" value="Groq (Llama 3.1 8B Instant)" readonly />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Max Tokens per Response</label>
+                <input type="number" class="form-control" value="500" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Rate Limit (per student/hour)</label>
+                <input type="number" class="form-control" value="30" />
+            </div>
+        </div>
+    </div>
+</div>

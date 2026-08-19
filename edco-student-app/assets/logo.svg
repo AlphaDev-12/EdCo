@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Main vibrant body gradient (Green -> Cyan -> Blue) -->
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8ce600"/>
+      <stop offset="45%" stop-color="#00c8b3"/>
+      <stop offset="85%" stop-color="#0072ce"/>
+      <stop offset="100%" stop-color="#0056b3"/>
+    </linearGradient>
+
+    <!-- Ring gradient -->
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a3f014"/>
+      <stop offset="50%" stop-color="#00dfc4"/>
+      <stop offset="100%" stop-color="#0088e6"/>
+    </linearGradient>
+
+    <!-- Star gradient -->
+    <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b4ff1a"/>
+      <stop offset="100%" stop-color="#60efd0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Four-Point Star (Top Left) -->
+  <path d="M 175 40 Q 175 60 155 60 Q 175 60 175 80 Q 175 60 195 60 Q 175 60 175 40 Z" fill="url(#starGrad)"/>
+
+  <!-- Orbital Ring (Behind Head, In Front of Arms) -->
+  <path d="M 100 120 C 130 65, 340 55, 390 105 C 440 155, 230 190, 115 135" 
+        fill="none" stroke="url(#ringGrad)" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- Stylized Figure forming 'X' -->
+  <!-- Left arm reaching up with star/orbit -->
+  <path d="M 140 260 C 120 180, 170 80, 200 60 C 215 50, 220 85, 205 130 C 190 170, 165 240, 210 320 L 260 410 C 275 435, 250 460, 225 440 L 160 340 C 130 290, 140 260, 140 260 Z" 
+        fill="url(#bodyGrad)"/>
+
+  <!-- Main crossing diagonal & head torso -->
+  <path d="M 230 170 C 260 210, 370 290, 420 340 C 445 365, 415 395, 390 375 L 290 270 M 205 130 C 220 110, 260 140, 260 160 C 260 190, 210 260, 160 340 L 140 400 C 130 430, 95 400, 110 370 L 145 310 Z" 
+        fill="url(#bodyGrad)"/>
+
+  <g id="figure-body">
+    <!-- Smooth dynamic X-shaped sweeping body -->
+    <path d="M 155 125 C 130 75, 200 45, 225 80 C 210 115, 175 220, 235 310 L 385 415 C 415 435, 435 405, 405 385 L 265 270 C 310 210, 390 140, 415 200 C 430 235, 395 260, 370 240 L 275 180 C 240 240, 165 375, 230 435 C 255 460, 220 480, 195 455 L 140 375 C 105 320, 140 220, 155 125 Z"
+          fill="url(#bodyGrad)"/>
+  </g>
+
+  <!-- Head / Student Icon with Graduation Cap -->
+  <g transform="translate(265, 135)">
+    <!-- Head Circle -->
+    <circle cx="20" cy="40" r="28" fill="#0072ce"/>
+    
+    <!-- Graduation Cap / Mortarboard -->
+    <!-- Diamond Top -->
+    <polygon points="20,0 -18,16 20,30 58,16" fill="#0052a3"/>
+    <polygon points="20,3 -12,16 20,27 52,16" fill="#0066cc"/>
+    <!-- Skull Cap Base -->
+    <path d="M 0 18 L 0 32 C 0 38, 40 38, 40 32 L 40 18 Z" fill="#004080"/>
+    <!-- Tassel -->
+    <path d="M 42 17 L 54 32 L 54 44" fill="none" stroke="#a3f014" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="54" cy="45" r="3" fill="#a3f014"/>
+  </g>
+</svg>

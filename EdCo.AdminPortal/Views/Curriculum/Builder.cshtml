@@ -1,0 +1,313 @@
+@model EdCo.Core.Entities.Subject
+@{
+    ViewData["Title"] = $"Builder: {Model.Name}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a href="/Curriculum" class="btn btn-sm btn-outline-secondary me-2"><i class="fa-solid fa-arrow-left"></i> Back</a>
+        <h2 class="d-inline"><i class="fa-solid fa-sitemap me-2"></i> @Model.GradeLevel.Name — @Model.Name</h2>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addChapterModal">
+            <i class="fa-solid fa-folder-plus me-1"></i> Add Chapter
+        </button>
+        <span id="saveIndicator" class="badge bg-dark align-self-center d-none">
+            <i class="fa-solid fa-spinner fa-spin me-1"></i> Saving...
+        </span>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-triangle-exclamation me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Chapter Tree -->
+<div id="chapterList" class="curriculum-tree">
+    @if (!Model.Chapters.Any())
+    {
+        <div class="text-center py-5" style="color: #8b949e;" id="emptyState">
+            <i class="fa-solid fa-folder-open fa-4x mb-3"></i>
+            <h5>No chapters yet</h5>
+            <p>Click "Add Chapter" to start building this curriculum.</p>
+        </div>
+    }
+
+    @foreach (var chapter in Model.Chapters.OrderBy(c => c.OrderIndex))
+    {
+        <div class="chapter-card card mb-3" data-chapter-id="@chapter.Id">
+            <div class="card-header d-flex justify-content-between align-items-center" style="cursor: grab;">
+                <div>
+                    <i class="fa-solid fa-grip-vertical text-muted me-2 drag-handle"></i>
+                    <i class="fa-solid fa-folder-open text-warning me-2"></i>
+                    <strong>Chapter @chapter.OrderIndex:</strong> @chapter.Title
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-info" onclick="openAddUnitModal(@chapter.Id)">
+                        <i class="fa-solid fa-file-circle-plus me-1"></i> Add Unit
+                    </button>
+                    <form asp-action="DeleteChapter" method="post" class="d-inline" onsubmit="return confirm('Delete this chapter and all its units?');">
+                        <input type="hidden" name="id" value="@chapter.Id" />
+                        <input type="hidden" name="subjectId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body p-2">
+                <div class="unit-list" data-chapter-id="@chapter.Id">
+                    @foreach (var unit in chapter.Units.OrderBy(u => u.OrderIndex))
+                    {
+                        <div class="unit-item d-flex align-items-center justify-content-between px-3 py-2 mb-1 rounded" data-unit-id="@unit.Id"
+                             style="background-color: var(--bg-main); border: 1px solid var(--border-color); cursor: grab; transition: all 0.2s;">
+                            <div>
+                                <i class="fa-solid fa-grip-vertical text-muted me-2 drag-handle"></i>
+                                <i class="fa-solid fa-file-lines text-info me-2"></i>
+                                <span>Unit @unit.OrderIndex: @unit.Title</span>
+                            </div>
+                            <div class="d-flex gap-1">
+                                <!-- Video Badge -->
+                                <button class="btn btn-sm @(unit.Video != null ? "btn-success" : "btn-outline-secondary")"
+                                        onclick="openVideoModal(@unit.Id, '@(unit.Video?.BunnyVideoId ?? "")', @(unit.Video?.DurationSeconds ?? 0))"
+                                        title="@(unit.Video != null ? "Video attached" : "No video")">
+                                    <i class="fa-solid fa-video"></i>
+                                </button>
+                                <!-- Notes Badge -->
+                                <button class="btn btn-sm @(unit.Notes != null ? "btn-success" : "btn-outline-secondary")"
+                                        onclick="openNotesModal(@unit.Id)"
+                                        title="@(unit.Notes != null ? "Notes attached" : "No notes")">
+                                    <i class="fa-solid fa-file-alt"></i>
+                                </button>
+                                <!-- Quiz Badge -->
+                                <button class="btn btn-sm @(unit.Quiz != null ? "btn-success" : "btn-outline-secondary")"
+                                        onclick="openQuizModal(@unit.Id, @(unit.Quiz?.Id ?? 0))"
+                                        title="@(unit.Quiz != null ? "Quiz attached" : "No quiz")">
+                                    <i class="fa-solid fa-clipboard-question"></i>
+                                </button>
+                                <!-- Delete Unit -->
+                                <form asp-action="DeleteUnit" method="post" class="d-inline" onsubmit="return confirm('Delete this unit?');">
+                                    <input type="hidden" name="id" value="@unit.Id" />
+                                    <input type="hidden" name="subjectId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-xmark"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!chapter.Units.Any())
+                    {
+                        <div class="text-center py-3 unit-empty-state" style="color: #484f58; border: 2px dashed #30363d; border-radius: 8px;">
+                            <i class="fa-solid fa-file-circle-plus me-1"></i> Drop units here or click "Add Unit"
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Add Chapter Modal -->
+<div class="modal fade" id="addChapterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">
+            <form asp-action="AddChapter" method="post">
+                <input type="hidden" name="subjectId" value="@Model.Id" />
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                    <h5 class="modal-title"><i class="fa-solid fa-folder-plus me-2"></i> Add Chapter</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Chapter Title</label>
+                        <input type="text" class="form-control" name="title" placeholder="e.g. Chemical Bonds" required autofocus />
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #30363d;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus me-1"></i> Add Chapter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Unit Modal -->
+<div class="modal fade" id="addUnitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">
+            <form asp-action="AddUnit" method="post">
+                <input type="hidden" name="subjectId" value="@Model.Id" />
+                <input type="hidden" name="chapterId" id="addUnitChapterId" />
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                    <h5 class="modal-title"><i class="fa-solid fa-file-circle-plus me-2"></i> Add Unit</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Unit Title</label>
+                        <input type="text" class="form-control" name="title" placeholder="e.g. Covalent Bonding" required autofocus />
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #30363d;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus me-1"></i> Add Unit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Notes Modal -->
+<div class="modal fade" id="notesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                <h5 class="modal-title"><i class="fa-solid fa-file-alt me-2"></i> Markdown Notes Editor</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="notesUnitId" />
+                <textarea id="notesMarkdown" class="form-control mb-3" rows="12" 
+                          placeholder="Write your lesson notes in Markdown format...
+
+# Heading
+## Sub-heading
+**Bold text** and *italic text*
+
+- Bullet point 1
+- Bullet point 2
+
+> Blockquote for key definitions
+" style="font-family: 'Courier New', monospace; font-size: 14px;"></textarea>
+
+                <div class="mb-3 border-top pt-3" style="border-color: #30363d !important;">
+                    <label class="form-label"><i class="fa-solid fa-file-arrow-up me-1"></i> Attach Document (PDF, Word, Text)</label>
+                    <div class="input-group">
+                        <input type="file" id="notesFile" class="form-control" accept=".pdf,.doc,.docx,.txt" />
+                        <button class="btn btn-outline-info" type="button" onclick="uploadDocument()"><i class="fa-solid fa-upload"></i> Upload</button>
+                    </div>
+                    <div id="attachedDocumentInfo" class="mt-2 d-none">
+                        <span class="badge bg-secondary p-2">
+                            <i class="fa-solid fa-paperclip me-1"></i> <span id="attachedFileName">document.pdf</span>
+                            <a href="#" id="attachedFileLink" target="_blank" class="text-info ms-2"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                            <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.65em;" onclick="removeDocument()"></button>
+                        </span>
+                    </div>
+                </div>
+                <div class="mb-3 border-top pt-3" style="border-color: var(--border-color) !important;">
+                    <label class="form-label"><i class="fa-solid fa-wand-magic-sparkles me-1 text-warning"></i> Generate Flashcards</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Count</span>
+                        <input type="number" id="flashcardCount" class="form-control" value="20" min="0" max="50" />
+                    </div>
+                    <small class="text-muted">Set to 0 to disable AI generation.</small>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveNotes()">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Save Notes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Attach Video Modal (Real Bunny.net) -->
+<div class="modal fade" id="videoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                <h5 class="modal-title"><i class="fa-solid fa-video me-2"></i> Attach Video (Bunny.net Stream)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="videoUnitId" />
+                <div class="mb-3">
+                    <label class="form-label">Upload Video File (.mp4, .mov, etc.)</label>
+                    <input type="file" class="form-control" id="videoFile" accept="video/*" />
+                    <div class="form-text text-muted">This video will be securely streamed via Bunny.net. Uploading large files may take a moment.</div>
+                </div>
+                <div id="videoUploadProgress" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span id="videoUploadStatusText" style="color: var(--text-primary);">Uploading to Server...</span>
+                        <span id="videoUploadPercent" style="color: var(--accent-blue); font-weight: bold;">0%</span>
+                    </div>
+                    <div class="progress" style="height: 10px; background-color: var(--bg-subtle);">
+                        <div id="videoProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%; background-color: #238636;"></div>
+                    </div>
+                    <div class="form-text text-muted mt-2"><i class="fa-solid fa-circle-info"></i> Your browser is uploading the file to our server, which will then securely stream it to Bunny.net. Please do not close this window.</div>
+                </div>
+                <div id="videoExistsInfo" class="mt-3 d-none p-3 rounded" style="background-color: var(--bg-subtle); border: 1px solid var(--border-color);">
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-circle-check text-success me-2"></i>
+                        <span style="color: var(--accent-blue);">Video is currently attached.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnUploadVideo" onclick="uploadVideo()">
+                    <i class="fa-solid fa-upload me-1"></i> Upload & Attach
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create/View Quiz Modal -->
+<div class="modal fade" id="quizModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                <h5 class="modal-title"><i class="fa-solid fa-clipboard-question me-2"></i> Quiz</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="quizUnitId" />
+                <input type="hidden" id="quizExistingId" />
+                <div class="mb-3">
+                    <label class="form-label">Quiz Title (Optional)</label>
+                    <input type="text" class="form-control" id="quizTitle" placeholder="e.g. End of Unit Test" />
+                </div>
+                <div id="quizExistsInfo" class="d-none">
+                    <div class="alert alert-success py-2">
+                        <i class="fa-solid fa-check-circle me-1"></i> Quiz exists. 
+                        <a href="#" id="editQuizLink" class="text-decoration-underline" style="color: var(--accent-blue);">Open in Quiz Studio →</a>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="quizActionBtn" onclick="createQuiz()">
+                    <i class="fa-solid fa-plus me-1"></i> Create Quiz
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .unit-item:hover { border-color: #58a6ff !important; background-color: #161b22 !important; }
+    .unit-item.sortable-chosen { opacity: 0.6; }
+    .unit-item.sortable-ghost { border: 2px dashed #58a6ff !important; background-color: transparent !important; }
+    .chapter-card.sortable-chosen { opacity: 0.6; }
+    .chapter-card.sortable-ghost { border: 2px dashed #f0883e !important; }
+    .drag-handle { cursor: grab; }
+</style>
+
+@section Scripts {
+<script src="~/js/curriculum-builder.js" asp-append-version="true"></script>
+}

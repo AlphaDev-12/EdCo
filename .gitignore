@@ -1,0 +1,45 @@
+# ==========================================
+# Secret & Sensitive Configuration JSON Files
+# ==========================================
+appsettings.json
+appsettings.*.json
+!appsettings.Example.json
+!appsettings.template.json
+test_groq.json
+*secret*.json
+*keys*.json
+*.secret.json
+
+# Environment Files
+.env
+.env.*
+!.env.example
+
+# Visual Studio & .NET Build Artifacts
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & Uploads
+*.log
+Logs/
+App_Data/Uploads/
+
+# Node.js & React Native / Expo Artifacts
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+.kotlin/
+/ios
+/android

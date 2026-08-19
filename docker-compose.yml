@@ -1,0 +1,149 @@
+name: edco-platform
+
+services:
+  edco-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: edco-db
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD:-EdCo_Secure_Pass2026!}
+      - MSSQL_PID=Standard
+    ports:
+      - "1433:1433"
+    volumes:
+      - edco-dbdata:/var/opt/mssql/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q \"SELECT 1\" || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - edco-network
+
+  edco-redis:
+    image: redis:7-alpine
+    container_name: edco-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - edco-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - edco-network
+
+  edco-api:
+    image: ${REGISTRY:-ghcr.io}/${REPOSITORY_OWNER:-edco}/edco-api:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: edco-api
+    restart: unless-stopped
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=edco-db,1433;Database=EdCoDb;User Id=sa;Password=${DB_PASSWORD:-EdCo_Secure_Pass2026!};TrustServerCertificate=True;MultipleActiveResultSets=true;
+      - ConnectionStrings__Redis=edco-redis:6379
+      - Jwt__Issuer=${JWT_ISSUER:-https://edco-api.production.com}
+      - Jwt__Audience=${JWT_AUDIENCE:-https://edco-app.production.com}
+      - Jwt__SecretKey=${JWT_SECRET:-SuperSecretKey_Production_2026_Minimum32CharsLong!}
+      - Serilog__MinimumLevel__Default=Information
+    depends_on:
+      edco-db:
+        condition: service_healthy
+      edco-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - edco-network
+
+  edco-admin:
+    image: ${REGISTRY:-ghcr.io}/${REPOSITORY_OWNER:-edco}/edco-admin:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile.admin
+    container_name: edco-admin
+    restart: unless-stopped
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=edco-db,1433;Database=EdCoDb;User Id=sa;Password=${DB_PASSWORD:-EdCo_Secure_Pass2026!};TrustServerCertificate=True;MultipleActiveResultSets=true;
+      - ConnectionStrings__Redis=edco-redis:6379
+      - ApiSettings__BaseUrl=${API_BASE_URL:-http://edco-api:8080}
+      - Serilog__MinimumLevel__Default=Information
+    volumes:
+      - edco-uploads:/app/wwwroot/uploads
+    depends_on:
+      edco-api:
+        condition: service_healthy
+      edco-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - edco-network
+
+  edco-proxy:
+    image: caddy:2-alpine
+    container_name: edco-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - DOMAIN_API=${DOMAIN_API:-http://localhost:5000}
+      - DOMAIN_ADMIN=${DOMAIN_ADMIN:-http://localhost:5001}
+      - ACME_EMAIL=${ACME_EMAIL:-admin@edco-platform.com}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      edco-api:
+        condition: service_healthy
+      edco-admin:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "caddy", "version"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - edco-network
+
+networks:
+  edco-network:
+    driver: bridge
+
+volumes:
+  edco-dbdata:
+    driver: local
+  edco-redisdata:
+    driver: local
+  edco-uploads:
+    driver: local
+  caddy-data:
+    driver: local
+  caddy-config:
+    driver: local
