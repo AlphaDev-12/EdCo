@@ -1,30 +1,104 @@
-**/.classpath
-**/.dockerignore
+# ==========================================
+# Secret & Sensitive Configuration Files
+# ==========================================
 **/.env
 **/.env.*
+**/.env*.local
+!**/.env.example
+**/appsettings.json
+**/appsettings.*.json
+!**/appsettings.Example.json
+!**/appsettings.template.json
+test_groq.json
+GradingLog.txt
+*secret*.json
+*keys*.json
+*.secret.json
+credentials.json
+google-services.json
+GoogleService-Info.plist
+*.http.env.json
+http-client.env.json
+
+# Certificates & Private Keys
+**/*.pfx
+**/*.pem
+**/*.key
+**/*.crt
+
+# ==========================================
+# Source Control & IDE Metadata
+# ==========================================
 **/.git
 **/.gitattributes
 **/.gitignore
+**/.vs
+**/.vscode
+**/.idea
+**/.classpath
 **/.project
 **/.settings
 **/.toolstarget
-**/.vs
-**/.vscode
 **/*.*proj.user
-**/*.db
-**/*.log
 **/*.user
+**/*.userosscache
+**/*.sln.docstates
+**/*.suo
+**/*.pubxml.user
+
+# ==========================================
+# Build Artifacts & Binaries
+# ==========================================
 **/bin
-**/charts
-**/docker-compose*
-**/Dockerfile*
-**/node_modules
 **/obj
 **/out
-**/secrets
+**/publish
+**/artifacts
+**/dist
+**/web-build
+
+# ==========================================
+# Package Dependencies
+# ==========================================
+**/node_modules
+
+# ==========================================
+# Local Databases, Logs & Diagnostics
+# ==========================================
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/*.sqlite
+**/*.sqlite3
+**/*.log
+**/*Log.txt
+**/*log.txt
+**/Logs
+**/logs
 **/temp
 **/tmp
+**/secrets
+
+# ==========================================
+# User Uploads & Media Storage
+# ==========================================
+**/App_Data/Uploads/*
+!**/App_Data/Uploads/.gitkeep
 **/wwwroot/uploads/*
 !**/wwwroot/uploads/.gitkeep
-GradingLog.txt
-test_groq.json
+
+# ==========================================
+# Docker & Deployment Infrastructure
+# ==========================================
+**/.dockerignore
+**/docker-compose*
+**/Dockerfile*
+**/charts
+
+# ==========================================
+# Operating System Files
+# ==========================================
+**/.DS_Store
+**/Thumbs.db
+**/desktop.ini
+**/ehthumbs.db

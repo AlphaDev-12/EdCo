@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=${DB_PASSWORD:-EdCo_Secure_Pass2026!}
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
       - MSSQL_PID=Standard
     ports:
       - "1433:1433"
@@ -50,11 +50,11 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Server=edco-db,1433;Database=EdCoDb;User Id=sa;Password=${DB_PASSWORD:-EdCo_Secure_Pass2026!};TrustServerCertificate=True;MultipleActiveResultSets=true;
+      - ConnectionStrings__DefaultConnection=Server=edco-db,1433;Database=EdCoDb;User Id=sa;Password=${DB_PASSWORD:?DB_PASSWORD must be set};TrustServerCertificate=True;MultipleActiveResultSets=true;
       - ConnectionStrings__Redis=edco-redis:6379
       - Jwt__Issuer=${JWT_ISSUER:-https://edco-api.production.com}
       - Jwt__Audience=${JWT_AUDIENCE:-https://edco-app.production.com}
-      - Jwt__SecretKey=${JWT_SECRET:-SuperSecretKey_Production_2026_Minimum32CharsLong!}
+      - Jwt__SecretKey=${JWT_SECRET:?JWT_SECRET must be set}
       - Serilog__MinimumLevel__Default=Information
     depends_on:
       edco-db:
@@ -82,7 +82,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Server=edco-db,1433;Database=EdCoDb;User Id=sa;Password=${DB_PASSWORD:-EdCo_Secure_Pass2026!};TrustServerCertificate=True;MultipleActiveResultSets=true;
+      - ConnectionStrings__DefaultConnection=Server=edco-db,1433;Database=EdCoDb;User Id=sa;Password=${DB_PASSWORD:?DB_PASSWORD must be set};TrustServerCertificate=True;MultipleActiveResultSets=true;
       - ConnectionStrings__Redis=edco-redis:6379
       - ApiSettings__BaseUrl=${API_BASE_URL:-http://edco-api:8080}
       - Serilog__MinimumLevel__Default=Information
