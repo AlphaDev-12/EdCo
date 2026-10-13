@@ -1,5 +1,5 @@
 # ==========================================
-# Secret & Sensitive Configuration JSON Files
+# Secret & Sensitive Configuration Files
 # ==========================================
 appsettings.json
 appsettings.*.json
@@ -9,37 +9,94 @@ test_groq.json
 *secret*.json
 *keys*.json
 *.secret.json
+credentials.json
+google-services.json
+GoogleService-Info.plist
+*.http.env.json
+http-client.env.json
 
 # Environment Files
 .env
 .env.*
+.env*.local
 !.env.example
 
-# Visual Studio & .NET Build Artifacts
+# Visual Studio, Rider & .NET Build Artifacts
 [Bb]in/
 [Oo]bj/
+[Aa]rtifacts/
 .vs/
+.idea/
 *.user
 *.userosscache
 *.sln.docstates
 *.suo
+publish/
+*.pubxml.user
+
+# Test Results & Code Coverage
+[Tt]est[Rr]esults/
+TestResults/
+*.trx
+coverage.cobertura.xml
+coverage/
+.nyc_output/
+
+# Local SQLite & Databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Logs & Diagnostics
+*.log
+*Log.txt
+*log.txt
+Logs/
+logs/
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+pnpm-debug.*
+
+# User Uploads & Media Storage
+App_Data/Uploads/*
+!App_Data/Uploads/.gitkeep
+**/wwwroot/uploads/*
+!**/wwwroot/uploads/.gitkeep
+
+# Node.js & React Native / Expo Artifacts
+node_modules/
+.expo/
+.expo-shared/
+dist/
+web-build/
+expo-env.d.ts
+.kotlin/
+.gradle/
+ios/
+android/
+.metro-cache/
+.metro-health-check*
+*.tsbuildinfo
+
+# Mobile Keystores & Signing Certificates
+*.keystore
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+*.crt
+*.pfx
+
+# Docker Local Overrides
+docker-compose.override.yml
 
 # Operating System Files
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# Logs & Uploads
-*.log
-Logs/
-App_Data/Uploads/
-
-# Node.js & React Native / Expo Artifacts
-node_modules/
-.expo/
-dist/
-web-build/
-expo-env.d.ts
-.kotlin/
-/ios
-/android
+ehthumbs.db
